@@ -7,4 +7,3 @@ tags/*
 .vscode/
 coverage/
 demo/*
-dist/*
