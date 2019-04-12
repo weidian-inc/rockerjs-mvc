@@ -1,0 +1,39 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "linterOptions": {
+        "exclude": [
+          "test/**"
+        ]
+    },
+    "jsRules": {
+    },
+    "rules": {
+        "array-type": false,
+        "ban-types": false,
+        "callable-types": false,
+        "forin": false,
+        "interface-name": false,
+        "interface-over-type-literal": false,
+        "one-variable-per-declaration": false,
+        "member-ordering": false,
+        "no-trailing-whitespace": false,
+        "no-string-literal": false,
+        "no-namespace": false,
+        "object-literal-sort-keys": false,
+        "only-arrow-functions": [
+            false
+        ],
+        "ordered-imports": false,
+        "max-classes-per-file": true,
+        "max-line-length": [true, 220],
+        "new-parens": false,
+        "no-unused-expression": false,
+        "no-shadowed-variable": false,
+        "prefer-for-of": false,
+        "variable-name": false
+    },
+    "rulesDirectory": []
+}

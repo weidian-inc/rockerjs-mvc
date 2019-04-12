@@ -1,0 +1,84 @@
+{
+    "name": "@rockerjs/mvc",
+    "version": "1.0.1-4",
+    "description": "A MVC framework based on Rockerjs/core used by node.js",
+    "author": {
+        "name": "yangli",
+        "email": "yl.yuxiu@foxmail.com",
+        "url": "https://github.com/royalrover"
+    },
+    "scripts": {
+        "build": "npm run clean && (tsc || true)",
+        "clean": "rimraf ./dist",
+        "cover": "npm run build && cross-env NODE_STARTER=rockerjs deco dist/test/test.spec.js && cd dist && cross-env NODE_STARTER=rockerjs istanbul cover _mocha -x src/errors/**/*.js -- test/test.spec.js --timeout 10000 --exit --reporter spec --recursive",
+        "dev": "npm run clean && tsc -w",
+        "lint": "tslint ./src/**/*.ts ./src/*.ts",
+        "prepublish": "npm run build",
+        "start": "tsc -w",
+        "test": "npm run build && cross-env NODE_STARTER=rockerjs deco dist/test/test.spec.js",
+        "test2": "cd test/app/ && cross-env NODE_STARTER=ssss node index.js"
+    },
+    "dependencies": {
+        "@rockerjs/core": "^1.0.2",
+        "ejs": "^2.6.1",
+        "ini": "^1.3.5",
+        "koa": "^2.7.0",
+        "koa-compress": "^3.0.0",
+        "mime": "^2.4.2",
+        "reflect-metadata": "^0.1.13",
+        "sb-scandir": "^2.0.0"
+    },
+    "devDependencies": {
+        "@rockerjs/mysql-starter": "^1.0.0-1",
+        "@rockerjs/redis-starter": "^1.0.0-1",
+        "@rockerjs/rocketmq-starter": "^1.0.0-5",
+        "@rockerjs/rpc-starter": "^1.0.0-2",
+        "@rockerjs/tsunit": "^1.0.0",
+        "@types/koa": "^2.0.48",
+        "@types/node": "^7.10.5",
+        "@vdian/commons": "^1.1.7",
+        "@vdian/deco-mocha": "0.0.3",
+        "@vdian/rocker-wdr": "0.0.4",
+        "@vdian/tracer": "0.0.16",
+        "coveralls": "^2.13.0",
+        "cross-env": "^5.2.0",
+        "istanbul": "^0.4.5",
+        "moment": "^2.24.0",
+        "request": "^2.88.0",
+        "request-promise": "^4.2.4",
+        "rimraf": "^2.6.3",
+        "tslint": "^5.14.0",
+        "typescript": "^2.7.2"
+    },
+    "keywords": [
+        "ioc",
+        "di",
+        "javascript",
+        "typescript",
+        "node",
+        "dependency injection",
+        "dependency inversion",
+        "inversion of control container",
+        "AOP",
+        "Aspect Oriented Program"
+    ],
+    "contributors": [
+        {
+            "name": "chemingjun",
+            "email": "chemingjun@weidian.com"
+        },
+        {
+            "name": "kangzhe",
+            "email": "kangzhe@weidian.com"
+        },
+        {
+            "name": "dingjunjie",
+            "email": "dingjunjie@weidian.com"
+        }
+    ],
+    "license": "MIT",
+    "directories": {
+        "doc": "doc"
+    },
+    "main": "./dist/index.js"
+}

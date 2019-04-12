@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        
+<mapper namespace="appInfo">
+    <select id="queryAll" resultType="../dto/App_Info">
+        select * from app_info order by gmt_create desc
+    </select>
+
+    <select id="queryByName" resultType="../dto/App_Info">
+        select * from app_info where username=#{name}
+    </select>
+
+    <select id="queryByNameAndAppname" resultType="../dto/App_Info">
+        select * from app_info where username=#{username} and appname=#{appname}
+    </select>
+
+    <insert id="add">
+        insert into app_info ( appid,secrete,username,appname )
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{appid},#{secrete},#{username},#{appname}
+        </trim>
+    </insert>
+
+    <update id="editBatchWithCondition">
+        update app_info
+        <set>
+            <foreach collection="Object.keys(data)" item="key" index="index" >
+                <if test="index <= (Object.keys(data).length -2)">
+                    ${key} = #{data[key]},
+                </if>
+                <if test="index > (Object.keys(data).length -2)">
+                    ${key} = #{data[key]}
+                </if>
+            </foreach>
+        </set>
+        <where>
+            <foreach collection="Object.keys(info)" item="key" index="j" >
+                <if test="j <= (Object.keys(info).length -2)">
+                    ${key} = #{info[key]} and
+                </if>
+                <if test="j > (Object.keys(info).length -2)">
+                    ${key} = #{info[key]}
+                </if>
+            </foreach>
+        </where>
+    </update>
+
+    <delete id="del">
+        delete from app_info where appid=#{appid}
+    </delete>
+
+</mapper>

@@ -1,0 +1,10 @@
+.git/
+.idea/
+.DS_Store
+node_modules/*
+tags/*
+.history
+.vscode/
+coverage/
+demo/*
+dist/*
