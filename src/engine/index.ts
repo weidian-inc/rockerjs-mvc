@@ -154,7 +154,9 @@ export async function bootstrap(rootPath: string) {
         // 5.2.2: parse controller
         const rockerjsHandler = route(modules);
         // 5.2.3: start mvc
-        const serverHandler = rockerjsHandler.start();
+        const serverHandler = rockerjsHandler.start({
+            port: +(CONFIG_TABLE[CURRENT_ENV][APP_TAG]["port"] || CONFIG_TABLE[CURRENT_ENV]["port"] || 8080),
+        });
 
         // 6th: start engine
         if (Container.getTypedHashmap().get(APPLICATION_TAG).size !== 1) {
