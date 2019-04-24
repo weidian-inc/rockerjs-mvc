@@ -306,7 +306,7 @@ function start(config: IConfigParam = {
     };
 }
 
-function plugin(pluginFn: {(input: Types.Pluginput): void}): {plugin: Function} {
+export function plugin(pluginFn: {(input: Types.Pluginput): void}): {plugin: Function} {
     if (util.isFunction(pluginFn)) {
         pluginAry.push(pluginFn);
     } else {

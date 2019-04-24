@@ -10,6 +10,7 @@ export const CONTAINER_TAG = {
     APPLICATION_TAG: "Application",
     FILTER_TAG: "Filter",
     CONTROLLER_TAG: "Controller",
+    PLUGIN_TAG: "Plugin",
 };
 
 export const CONTROLLER = {
@@ -18,7 +19,6 @@ export const CONTROLLER = {
 };
 
 export const FILTER_CONFIG_SECTION = `filter`;
-export const FILTER_CONFIG_ARGS = `args`;
 // export const FILTER_CONFIG_ARRAY = `filters`;
 export const NODE_STARTER = `rockerjs`;
 export const APP_TAG = `application`;

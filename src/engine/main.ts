@@ -115,7 +115,7 @@ export abstract class AbstractApplication {
         throw new ApplicationException(`Application must override the static method "main"`);
     }
 
-    public abstract async beforeServerStart(server: ServerFacade, config: string[]): Promise<void>;
+    public abstract async beforeServerStart(server: ServerFacade, config: any): Promise<void>;
 }
 
 export function Application(...args: any[]): ClassDecorator | any {

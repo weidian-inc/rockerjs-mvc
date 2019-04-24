@@ -5,23 +5,39 @@ import { Logger } from "@rockerjs/common";
 import scandir from "sb-scandir";
 import * as ini from "ini";
 import { IComponentCanon, AbstractApplication } from "./main";
-import { AbstractFilter } from "../web/annotation";
-import { pipe, route, config } from "../web/main";
+import { AbstractFilter, AbstractPlugin } from "../web/annotation";
+import { pipe, route, plugin, config } from "../web/main";
 import { ApplicationException } from "../errors/application.exception";
-import { ENV, CONFIG_FILE_ENV, FILTER_CONFIG_ARGS, CONTAINER_TAG, APP_TAG, STARTER } from "../const";
-const { APPLICATION_TAG, COMPONENT_TAG } = CONTAINER_TAG;
+import { ENV, CONFIG_FILE_ENV, CONTAINER_TAG, APP_TAG, STARTER } from "../const";
+const { APPLICATION_TAG, COMPONENT_TAG, PLUGIN_TAG } = CONTAINER_TAG;
 const CONFIG_REG = /^app\.(?:(\w+?)\.)?config$/i;
 const CONFIG_TABLE = {};
 const CURRENT_ENV = process.env.NODE_ENV || ENV.PROD;
 // if file has the magic alphabet, the scanner can't find it
 const SHADOW_FILE = "/// shadow";
+const SHADOW_FILE1 = "///shadow";
+const EXCLUDE_DIR = "excludesDir";
 
 function scan(rootPath: string = process.cwd()) {
+    let excludesDir = null;
+    if (CONFIG_TABLE[CURRENT_ENV] && Array.isArray(CONFIG_TABLE[CURRENT_ENV][EXCLUDE_DIR])) {
+        excludesDir = CONFIG_TABLE[CURRENT_ENV][EXCLUDE_DIR];
+    }
     return scandir(rootPath, true, function(pth) {
         const stat = fs.statSync(pth),
             extName = path.extname(pth),
-            baseName = path.basename(pth);
-        return baseName !== "node_modules" && (extName === ".js" && !fs.readFileSync(pth, "utf8").includes(SHADOW_FILE) || stat.isDirectory());
+            baseName = path.basename(pth),
+            content = stat.isDirectory() ? "" : fs.readFileSync(pth, "utf8");
+        let isExcludeDir = false;    
+
+        for (let i = 0, len = excludesDir.length; i < len; i++) {
+            const it = excludesDir[i];
+            if (it && pth.includes(it)) {
+                isExcludeDir = true;
+                break;
+            }
+        }
+        return !isExcludeDir && baseName !== "node_modules" && (extName === ".js" && (!content.includes(SHADOW_FILE) && !content.includes(SHADOW_FILE1)) || stat.isDirectory());
     });
 }
 
@@ -46,7 +62,10 @@ export async function bootstrap(rootPath: string) {
     try {
         let modules = [];
         const scanErrorFiles = [];
-        // 1st step: scan files and load them, but can't find the starter configured in app.config
+        // 1st step: parse configuration
+        await parseConfigFile(rootPath);
+
+        // 2nd step: scan files and load them, but can't find the starter configured in app.config
         await scan(rootPath).then((result) => {
             return result.files.forEach((f: string) => {
                 try {
@@ -59,12 +78,9 @@ export async function bootstrap(rootPath: string) {
             });
         });
 
-        const componentsInitialArray = [], componentNames = [];
-        // 2nd step: parse configuration
-        await parseConfigFile(rootPath);
-
         // 3th step: init all components and starters
         // 3.1 init starter
+        const componentsInitialArray = [], componentNames = [];
         if (CONFIG_TABLE[CURRENT_ENV]) {
             for (const section in CONFIG_TABLE[CURRENT_ENV]) {
                 if (CONFIG_TABLE[CURRENT_ENV].hasOwnProperty(section)) {
@@ -80,7 +96,7 @@ export async function bootstrap(rootPath: string) {
             }
         }
 
-        Container.getTypedHashmap().get(COMPONENT_TAG).forEach((v, constructor) => {
+        Container.getTypedHashmap().get(COMPONENT_TAG) && Container.getTypedHashmap().get(COMPONENT_TAG).forEach((v, constructor) => {
             const componentName = constructor.name.substring(0, 1).toLowerCase() + constructor.name.substring(1);
             const curretEnvConfig = CONFIG_TABLE[CURRENT_ENV] && CONFIG_TABLE[CURRENT_ENV][componentName];
             const object = Container.getObject<IComponentCanon>(componentName);
@@ -114,7 +130,7 @@ export async function bootstrap(rootPath: string) {
         const filtersConfig = {};
         CONFIG_TABLE[CURRENT_ENV] && Object.keys(CONFIG_TABLE[CURRENT_ENV]).map((it) => {
             if (it.indexOf("filter:") !== -1) {
-                filtersConfig[it.slice(7)] = CONFIG_TABLE[CURRENT_ENV][it][FILTER_CONFIG_ARGS];
+                filtersConfig[it.slice(7)] = CONFIG_TABLE[CURRENT_ENV][it];
             }
         });
         // CONFIG_TABLE[CURRENT_ENV][FILTER_CONFIG_SECTION] && CONFIG_TABLE[CURRENT_ENV][FILTER_CONFIG_SECTION][FILTER_CONFIG_ARRAY];
@@ -134,28 +150,40 @@ export async function bootstrap(rootPath: string) {
         });
 
         // beforeServerStart hook
-        if (Container.getTypedHashmap().get(APPLICATION_TAG).size !== 1) {
-            throw new ApplicationException(`Application must have only one entry method`);
+        if (Container.getTypedHashmap().get(APPLICATION_TAG)) {
+            if (Container.getTypedHashmap().get(APPLICATION_TAG).size !== 1) {
+                throw new ApplicationException(`Application must have only one entry method`);
+            } else {
+                const applicationArray = [];
+                Container.getTypedHashmap().get(APPLICATION_TAG).forEach((v, clazz) => {
+                    applicationArray.push(Container.injectClazzManually(clazz, APPLICATION_TAG).beforeServerStart({
+                        config,
+                    }, CONFIG_TABLE[CURRENT_ENV] && CONFIG_TABLE[CURRENT_ENV][APP_TAG]));
+                });
+                await Promise.all(applicationArray);
+            }
         } else {
-            const applicationArray = [];
-            Container.getTypedHashmap().get(APPLICATION_TAG).forEach((v, clazz) => {
-                applicationArray.push(Container.injectClazzManually(clazz, APPLICATION_TAG).beforeServerStart({
-                    config,
-                }, CONFIG_TABLE[CURRENT_ENV] && CONFIG_TABLE[CURRENT_ENV][APP_TAG]));
-            });
-            await Promise.all(applicationArray);
+            throw new ApplicationException(`Must have Application annotation`);
         }
-
+        
         // 5.2: mvc runner
         // 5.2.1: amount filters
         filters.forEach((filter) => {
-            pipe(filter.doFilter);
+            pipe(filter.doFilter.bind(filter));
         });
         // 5.2.2: parse controller
         const rockerjsHandler = route(modules);
         // 5.2.3: start mvc
         const serverHandler = rockerjsHandler.start({
             port: +(CONFIG_TABLE[CURRENT_ENV][APP_TAG]["port"] || CONFIG_TABLE[CURRENT_ENV]["port"] || 8080),
+        });
+        // 5.2.4: add render plugins
+        Container.getTypedHashmap().get(PLUGIN_TAG) && Container.getTypedHashmap().get(PLUGIN_TAG).forEach((v, clazz) => {
+            const pl: AbstractPlugin = Container.injectClazzManually(clazz, PLUGIN_TAG);
+            const clazzName = clazz.name;
+            const pluginName = clazzName.substring(0, 1).toLowerCase() + clazzName.substring(1);
+            // 调用plugin
+            plugin(pl.do(CONFIG_TABLE[CURRENT_ENV] && CONFIG_TABLE[CURRENT_ENV][pluginName]));
         });
 
         // 6th: start engine

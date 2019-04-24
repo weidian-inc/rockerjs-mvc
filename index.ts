@@ -1,7 +1,7 @@
 import { Container, Inject } from "@rockerjs/core";
 import { bootstrap } from "./src/engine";
 import { AbstractComponent, Component, AbstractApplication, Application } from "./src/engine/main";
-import { Filter, AbstractFilter, Controller, Request, Response, Param, Head, Get, Post } from "./src/web/annotation";
+import { Filter, AbstractFilter, Plugin, AbstractPlugin, Controller, Request, Response, Param, Head, Get, Post } from "./src/web/annotation";
 import { RedirectResp, DownloadResp } from "./src/web/main";
 import { NODE_STARTER } from "./src/const";
 
@@ -13,4 +13,4 @@ if (process.env["NODE_STARTER"] !== NODE_STARTER) {
 }
 
 export { bootstrap, Inject, Container, AbstractComponent, Component, AbstractApplication, Application,
-    Filter, AbstractFilter, Controller, Request, Response, Param, Head, Get, Post, RedirectResp, DownloadResp };
+    Filter, AbstractFilter, Plugin, AbstractPlugin, Controller, Request, Response, Param, Head, Get, Post, RedirectResp, DownloadResp };

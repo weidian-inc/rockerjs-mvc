@@ -136,7 +136,7 @@ function proAssets() {
                 return;
             }
         }
-        throw new Types.MVCError("Not found.", 404);
+        throw new Types.MVCError(`${url} Not found.`, 404);
     };
 }
 

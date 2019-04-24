@@ -2,6 +2,7 @@ import { Container } from "@rockerjs/core";
 import * as Application from "koa";
 import { CONTAINER_TAG, CONTROLLER } from "../const";
 import * as _Types from "./type";
+import { Types } from "./main";
 const { ReqMethodParamType } = _Types;
 
 /**
@@ -31,9 +32,30 @@ export function Filter(...args: any[]): ClassDecorator | any {
 }
 
 export abstract class AbstractFilter {
-    public abstract init(args: string[]): void;
+    public abstract init(args: any): void;
     public abstract async doFilter(context: Application.Context, next): Promise<void>;
     public abstract destroy(): void;
+}
+
+export function Plugin(...args: any[]): ClassDecorator | any {
+    return (function(target: Function) {
+        // define class module 
+        if (target !== undefined) {
+            const clazz = target as FunctionConstructor; // target is class constructor
+            Container.provides([CONTAINER_TAG.PLUGIN_TAG, clazz, function() {
+                const clazzName = clazz.name;
+                const plugin = new clazz(...args);
+                return plugin;
+            }]);
+
+            args.unshift(CONTAINER_TAG.PLUGIN_TAG);
+            Container.injectClazzManually(clazz, ...args);
+        }
+    }).apply(this, args);
+}
+
+export abstract class AbstractPlugin {
+    public abstract do(config: any): (input: Types.Pluginput) => void;
 }
 
 export function Controller(...args: any[]): ClassDecorator | any {
@@ -54,6 +76,7 @@ export function Controller(...args: any[]): ClassDecorator | any {
         }
     };
 }
+
 /**
  * The param"s decorator for Request object of koa
  * @param {object} target
