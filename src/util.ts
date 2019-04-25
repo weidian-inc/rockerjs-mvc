@@ -45,3 +45,9 @@ export function getLocalIp() {
     }
     return localIp;
 }
+
+export function separatorGenerator(msg: string) {
+    const separatorArr = new Array(120);
+    let tmp = null;
+    return (separatorArr.splice(15, 0, msg), tmp = separatorArr.join("-"), tmp.slice(0, 120));
+}

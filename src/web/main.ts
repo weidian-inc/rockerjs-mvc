@@ -176,7 +176,7 @@ function start(config: IConfigParam = {
     port: Start.port,
 }): { plugin: Function, server: Application} {
     if (typeof config["port"] !== "number") {
-        throw new _Types.MVCError("\n[Rocker-mvc]Start server error, server port expect for start config.\n");
+        throw new _Types.MVCError("Start server error, server port expect for start config.");
     }
     Start.port = config.port;
 
@@ -194,9 +194,7 @@ function start(config: IConfigParam = {
     let server = null;
 
     setImmediate(() => {
-        const ss = new Array(160).join("-");
-        Logger.info(`${ss}`);
-        Logger.info(`[Rocker-mvc]Server(${Util.getLocalIp()}) starting...`);
+        Logger.info(`Server(${Util.getLocalIp()}) starting ...`);
 
         // Startup plugins
         if (pluginAry.length > 0) {
@@ -212,7 +210,7 @@ function start(config: IConfigParam = {
             });
 
             pluginAry.forEach((pl) => {
-                Logger.info(`[Rocker-mvc]Starting plugin ${pl}...`);
+                Logger.info(`Starting plugin ${pl} ...`);
                 pl(ref);
             });
         }
@@ -275,15 +273,13 @@ function start(config: IConfigParam = {
                     }();
                 },
             });
-            Logger.info(`\n[Rocker-mvc]Init Tracelocal completed.`);
 
             koa.context.onerror = onKoaErr;
             koa.listen(config.port, "0.0.0.0");
 
             Logger.info(bootstrapMsg());
 
-            Logger.info(`\n[Rocker-mvc]Server(${Util.getLocalIp()}) start completed,listening on port ${config.port}...`);
-            Logger.info(`${ss}`);
+            Logger.info(`Server(${Util.getLocalIp()}) start completed, listening on port ${config.port} ...`);
 
             process.on("uncaughtException", function(err) {
                 Logger.error(err);
@@ -293,9 +289,8 @@ function start(config: IConfigParam = {
                 Logger.error(`unhandled rejection: ${p} reason: ${reason}`);
             });
         } catch (ex) {
-            Logger.error("[Rocker-mvc]Start server ${address} error.\n");
+            Logger.error("Start server error.\n");
             Logger.error(ex);
-            Logger.info(`${ss}`);
             throw ex;
         }
     });

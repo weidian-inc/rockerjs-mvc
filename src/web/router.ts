@@ -90,7 +90,7 @@ function proAssets() {
                 if (url.startsWith(urlPre)) {
                     url = url.substring(urlPre.length);
                     if (url.trim() === "") {
-                        throw new Types.MVCError("Not found.", 404);
+                        url = urlPre;
                     }
                     if (typeof (to) === "object") {
                         cacheStrategy = to;
