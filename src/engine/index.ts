@@ -33,13 +33,16 @@ function scan(rootPath: string = process.cwd()) {
             content = stat.isDirectory() ? "" : fs.readFileSync(pth, "utf8");
         let isExcludeDir = false;    
 
-        for (let i = 0, len = excludesDir.length; i < len; i++) {
-            const it = excludesDir[i];
-            if (it && pth.includes(it)) {
-                isExcludeDir = true;
-                break;
+        if (excludesDir) {
+            for (let i = 0, len = excludesDir.length; i < len; i++) {
+                const it = excludesDir[i];
+                if (it && pth.includes(it)) {
+                    isExcludeDir = true;
+                    break;
+                }
             }
         }
+        
         return !isExcludeDir && baseName !== "node_modules" && (extName === ".js" && (!content.includes(SHADOW_FILE) && !content.includes(SHADOW_FILE1)) || stat.isDirectory());
     });
 }
