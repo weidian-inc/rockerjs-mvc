@@ -138,7 +138,7 @@ export async function bootstrap(rootPath: string) {
                 if (componentName === "midLogger") {
                     const curretEnvConfig = CONFIG_TABLE[CURRENT_ENV] && CONFIG_TABLE[CURRENT_ENV][componentName];
                     const object = Container.getObject<IComponentCanon>(componentName);
-                    curretEnvConfig[CONFIG_FILE_ENV] = CURRENT_ENV;
+                    curretEnvConfig && (curretEnvConfig[CONFIG_FILE_ENV] = CURRENT_ENV);
                     await object.start(curretEnvConfig);
                     break;
                 }
@@ -151,7 +151,7 @@ export async function bootstrap(rootPath: string) {
             const componentName = constructor.name.substring(0, 1).toLowerCase() + constructor.name.substring(1);
             const curretEnvConfig = CONFIG_TABLE[CURRENT_ENV] && CONFIG_TABLE[CURRENT_ENV][componentName];
             const object = Container.getObject<IComponentCanon>(componentName);
-            curretEnvConfig[CONFIG_FILE_ENV] = CURRENT_ENV;
+            curretEnvConfig && (curretEnvConfig[CONFIG_FILE_ENV] = CURRENT_ENV);
             componentNames.push(componentName);
             componentsInitialArray.push(object.start(curretEnvConfig));
         });
