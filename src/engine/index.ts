@@ -171,6 +171,20 @@ export async function bootstrap(rootPath: string) {
             }
         });
 
+        // 4.1: start components when first init error
+        const componentsRestartArray = [];
+        Container.getTypedHashmap().get(COMPONENT_TAG) && Container.getTypedHashmap().get(COMPONENT_TAG).forEach((v, constructor) => {
+            const componentName = constructor.name.substring(0, 1).toLowerCase() + constructor.name.substring(1);
+            const object = Container.getObject<IComponentCanon>(componentName);
+            if (object.status !== "on") {
+                const curretEnvConfig = CONFIG_TABLE[CURRENT_ENV] && CONFIG_TABLE[CURRENT_ENV][componentName];
+                curretEnvConfig && (curretEnvConfig[CONFIG_FILE_ENV] = CURRENT_ENV);
+                componentsRestartArray.push(object.start(curretEnvConfig));
+            }
+        });
+        // restart components
+        await Promise.all(componentsRestartArray);
+
         modules = Object.keys(require("module")._cache).filter((name) => {
             return name.indexOf("/node_modules") === -1;
         });
