@@ -21,13 +21,13 @@ export abstract class AbstractComponent {
     //     return this._moduleObject;
     // }
 
-    public abstract start(config: any): Promise<any> | any;
+    public abstract start(config: any, appConfig?: any): Promise<any> | any;
 }
 
 export interface IComponentCanon {
     name: string;
     status: "on" | "pending" | "off";
-    start: (...args: any[]) => Promise<any>;
+    start: (args: any, appConfig?: any) => Promise<any>;
     export: () => object;
 }
 
@@ -68,10 +68,10 @@ export function Component(...args: any[]): ClassDecorator | any {
                         }
     
                         // args should be injected from config file 
-                        public start(config: any): Promise<any> {
+                        public start(config: any, appConfig: any): Promise<any> {
                             if (this._export && typeof this._export.start === "function") {
                                 try {
-                                    const sret = this._export.start(config);
+                                    const sret = this._export.start(config, appConfig);
                                     return Util.isPromise(sret) ? sret.then((result) => {
                                         this.status = "on";
                                         return result ? result : this;

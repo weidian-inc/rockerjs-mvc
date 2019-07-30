@@ -32,7 +32,7 @@ export function Filter(...args: any[]): ClassDecorator | any {
 }
 
 export abstract class AbstractFilter {
-    public abstract init(args: any): void;
+    public abstract init(args: any, appConfig?: any): void;
     public abstract async doFilter(context: Application.Context, next): Promise<void>;
     public abstract destroy(): void;
 }
@@ -113,7 +113,7 @@ export function Param(_cfg: _Types.RouterParamType): Function {
                 return v;
             }
             const tfn = dt[index];
-            if (tfn.name.toUpperCase() === "OBJECT") {
+            if (tfn.name.toUpperCase() === "OBJECT" || tfn.name.toUpperCase() === "BOOLEAN") {
                 return typeof (v) === "string" ? (new Function("", `return ${v}`))() : v; // Support ill-formed json object
             } else {
                 return tfn(v);

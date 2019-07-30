@@ -1,6 +1,6 @@
 {
     "name": "@rockerjs/mvc",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "description": "A MVC framework based on Rockerjs/core used by node.js",
     "author": {
         "name": "yangli",

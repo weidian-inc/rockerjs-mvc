@@ -96,7 +96,7 @@ export async function bootstrap(rootPath: string) {
         // 1st step: parse configuration
         // Logger.info(separatorGenerator("step 1. parse configuration"));
         await parseConfigFile(rootPath);
-
+        const appConfig = CONFIG_TABLE[CURRENT_ENV] && CONFIG_TABLE[CURRENT_ENV][APP_TAG];
         // 2nd step: scan files and load them, but can't find the starter configured in app.config
         // Logger.info(separatorGenerator("step 2. files scanning & loading"));
         await scan(rootPath).then((result) => {
@@ -139,7 +139,7 @@ export async function bootstrap(rootPath: string) {
                     const curretEnvConfig = CONFIG_TABLE[CURRENT_ENV] && CONFIG_TABLE[CURRENT_ENV][componentName];
                     const object = Container.getObject<IComponentCanon>(componentName);
                     curretEnvConfig && (curretEnvConfig[CONFIG_FILE_ENV] = CURRENT_ENV);
-                    await object.start(curretEnvConfig);
+                    await object.start(curretEnvConfig, appConfig);
                     break;
                 }
             }
@@ -153,7 +153,8 @@ export async function bootstrap(rootPath: string) {
             const object = Container.getObject<IComponentCanon>(componentName);
             curretEnvConfig && (curretEnvConfig[CONFIG_FILE_ENV] = CURRENT_ENV);
             componentNames.push(componentName);
-            componentsInitialArray.push(object.start(curretEnvConfig));
+            // component的初始化函数传递两个参数：componentConfig和appConfig
+            componentsInitialArray.push(object.start(curretEnvConfig, appConfig));
         });
 
         let initialOutcome = await Promise.all(componentsInitialArray);
@@ -179,7 +180,7 @@ export async function bootstrap(rootPath: string) {
             if (object.status !== "on") {
                 const curretEnvConfig = CONFIG_TABLE[CURRENT_ENV] && CONFIG_TABLE[CURRENT_ENV][componentName];
                 curretEnvConfig && (curretEnvConfig[CONFIG_FILE_ENV] = CURRENT_ENV);
-                componentsRestartArray.push(object.start(curretEnvConfig));
+                componentsRestartArray.push(object.start(curretEnvConfig, appConfig));
             }
         });
         // restart components
@@ -208,7 +209,8 @@ export async function bootstrap(rootPath: string) {
         Object.keys(filtersConfig).forEach((filterName) => {
             try {
                 const filter = Container.getObject<AbstractFilter>(filterName);
-                filter.init(filtersConfig[filterName]);
+                // filter的初始化函数传递两个参数
+                filter.init(filtersConfig[filterName], appConfig);
                 filters.push(filter);
             } catch (e) {
                 throw new ApplicationException(`Filter error duaring its lifetime, ${e.message}`, e.stack);
